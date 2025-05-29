@@ -1,0 +1,1 @@
+From the starting position, turn Wheel 1: 15 time(s), turn Wheel 2: 9 time(s), turn Wheel 3: 0 time(s), and turn Wheel 4: 2 time(s).

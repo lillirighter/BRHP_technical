@@ -27,7 +27,7 @@ get_new_position <-function(winner) {
   floor_4 <- as.list(safecracker$Floor_4)
   wheel_4 <- as.list(safecracker$Wheel_4)
   
-  turns_1 <- as.numeric(winner$num_turns_1) ## TURN THESE BACK TO WINNER PLS
+  turns_1 <- as.numeric(winner$num_turns_1) 
   turns_2 <-as.numeric(winner$num_turns_2)
   turns_3 <- as.numeric(winner$num_turns_3)
   turns_4 <- as.numeric(winner$num_turns_4)
@@ -50,12 +50,15 @@ get_new_position <-function(winner) {
   wheel_4_new <- split(wheel_4,rep(1:2,c(16-turns_4,turns_4)))
   wheel_4_solved <- if (length(wheel_4_new)<2) wheel_4 else c(wheel_4_new[[2]], wheel_4_new[[1]])
   
-  safecracker_solved <-data.frame(unlist(Base_constant),unlist(floor_1),unlist(wheel_1_solved), unlist(floor_2_solved), unlist(wheel_2_solved), unlist(floor_3_solved), unlist(wheel_3_solved), unlist(floor_4_solved), unlist(wheel_4_solved))
-  colnames(safecracker_solved) <- colnames(safecracker_solved) %>% 
-    str_remove_all("\\.") %>%
-    str_remove_all("_solved") %>%
-    str_remove_all("_constant") %>%
-    str_remove_all("unlist")
+  safecracker_solved$Base = as.numeric(unlist(Base_constant))
+  safecracker_solved$floor_1 = as.numeric(unlist(floor_1))
+  safecracker_solved$wheel_1 = as.numeric(unlist(wheel_1_solved))
+  safecracker_solved$floor_2 = as.numeric(unlist(floor_2_solved))
+  safecracker_solved$wheel_2 = as.numeric(unlist(wheel_2_solved))
+  safecracker_solved$floor_3 = as.numeric(unlist(floor_3_solved))
+  safecracker_solved$wheel_3 = as.numeric(unlist(wheel_3_solved))
+  safecracker_solved$floor_4 = as.numeric(unlist(floor_4_solved))
+  safecracker_solved$wheel_4 = as.numeric(unlist(wheel_4_solved))
   
   verifications <- data.frame(matrix(ncol = 2, nrow = 0))
   colnames(verifications) <- c('works', 'total') 
@@ -126,233 +129,32 @@ solutions_in_running[,'which_one'] = NA
 
 #next we will test all these solutions across all 16 base rows based on the number of turns
 for (combo in 1:nrow(solutions_in_running)) {
-  safecracker_solved <- data.frame(matrix(ncol = 1, nrow = 0))
+  safecracker_solved <- data.frame(matrix(ncol = 1, nrow = 16))
+  colnames(safecracker_solved) <- 'row_number_og'
   tester<-solutions_in_running %>%
     slice(combo)
-  get_new_position(tester)
-  if (all(safecracker_solved$works == "TRUE"))
-    solutions_in_running$which_one[[combo]] <- "WINNER"
-    break
+  current_check <-get_new_position(tester) %>%
+    rename('works'= 'X.TRUE.')
+  if (all(current_check$works == "TRUE"))
+    next
+  else solutions_in_running$which_one[[combo]] <- "eliminated"
 }
 
-#
 
-##find the winner, which should be a combination that is present for all Base positions
-winner <- get_dupes(solutions_that_work, !Base_posish)
-#output instructions to heist team
+##rename the winner, which should be a combination that is present for all Base positions (what the last step broke on)
+winner <- solutions_in_running %>%
+  mutate(which_one = replace_na(which_one, "winner")) %>%
+  filter(!which_one=="eliminated")
 
-test_row <- solutions_in_running %>%
-  slice(2)
+#output instructions to heist team and create a table that reflects the end position. both get saved in same directory
+report_winner(winner)
+cat(report_winner(winner), file = "solve_instructions.txt")
 
-
-report_winner(stil_runnin)
-
-##and create a table that reflects the end position
-
-hehe <-get_new_position(stil_runnin)
-
-
-####in progress ugly version
+make_table <- as.data.frame(get_new_position(winner))
+puzzle_solved <-make_table %>%
+  select(!row_number_og & !X.50. & !X.TRUE.)
+write_csv(puzzle_solved, "puzzle_solved.csv")
+  
 
 
 
-
-single_line_test <- function(h, i, J, K, L) {
-  posish<-i
-  constant<-safecracker$Base[[i]]
-w<-if (is.na(safecracker$Wheel_1[[h]])) safecracker$Floor_1[[posish]] else safecracker$Wheel_1[[h]]
-rot_a <-h
-num_turns_w <- if (rot_a>posish) (posish + (16-rot_a)) else (posish-rot_a)
-
-x<-if (is.na(safecracker$Wheel_2[[J]])) safecracker$Floor_2[[h]] else safecracker$Wheel_2[[J]]
-rot_b <-J
-num_turns_x <- if (rot_b>posish) (posish + (16-rot_b)) else (posish-rot_b)
-
-y<-if (is.na(safecracker$Wheel_3[[K]])) safecracker$Floor_3[[J]] else safecracker$Wheel_3[[K]]
-rot_c <-K
-num_turns_y <- if (rot_c>posish) (posish + (16-rot_c)) else (posish-rot_c)
-
-z <- if (is.na(safecracker$Wheel_4[[L]])) safecracker$Floor_4[[K]] else safecracker$Wheel_4[[L]]
-rot_d <-L
-num_turns_z <- if (rot_d>posish) (posish + (16-rot_d)) else (posish-rot_d)
-
-summed_val <- constant + w + x + y + z
-print(summed_val)
-works<- if (summed_val == 50) ("TRUE") else  ("FALSE")
-the_numbers <- c(constant,w,x,y,z)
-print(the_numbers)
-latest <- c(posish,num_turns_w,num_turns_x,num_turns_y,num_turns_z,works)
-latest_df<-data.frame(matrix(latest, 1))
-colnames(latest_df) <- c('Base_posish', 'num_turns_1', 'num_turns_2', 'num_turns_3', 'num_turns_4', 'works')
-solutions_list<-rbind(solutions_list,latest_df)
-}
-
-single_line_test(h<-7,i<-9,J<-16,K<-3, L<-3)
-
-
-
-solutions_round_2 <- data.frame(matrix(ncol = 6, nrow = 0))
-colnames(solutions_round_2) <- c('Base_posish', 'num_turns_1', 'num_turns_2', 'num_turns_3', 'num_turns_4', 'works')
-posish <-2
-constant <-safecracker$Base[[2]]
-for (h in 1:nrow(safecracker)) { 
-  w<-if (is.na(safecracker$Wheel_1[[h]])) safecracker$Floor_1[[posish]] else safecracker$Wheel_1[[h]]
-  rot_a <-h
-  num_turns_w <- if (rot_a>posish) (posish + (16-rot_a)) else (posish-rot_a)
-  for (J in 1:nrow(safecracker)) {
-    x<-if (is.na(safecracker$Wheel_2[[J]])) safecracker$Floor_2[[h]] else safecracker$Wheel_2[[J]]
-    rot_b <-J
-    num_turns_x <- if (rot_b>posish) (posish + (16-rot_b)) else (posish-rot_b)
-    for (K in 1:nrow(safecracker)) {
-      y<-if (is.na(safecracker$Wheel_3[[K]])) safecracker$Floor_3[[J]] else safecracker$Wheel_3[[K]]
-      rot_c <-K
-      num_turns_y <- if (rot_c>posish) (posish + (16-rot_c)) else (posish-rot_c)
-      for (L in 1:nrow(safecracker)) {
-        z <- if (is.na(safecracker$Wheel_4[[L]])) safecracker$Floor_4[[K]] else safecracker$Wheel_4[[L]]
-        rot_d <-L
-        num_turns_z <- if (rot_d>posish) (posish + (16-rot_d)) else (posish-rot_d)
-        
-        summed_val <- constant + w + x + y + z
-        print(summed_val)
-        works<- if_else(summed_val == 50, "TRUE", "FALSE")
-        the_numbers <- c(constant,w,x,y,z)
-        print(the_numbers)
-        latest <- c(posish,num_turns_w,num_turns_x,num_turns_y,num_turns_z,works)
-        latest_df<-data.frame(matrix(latest, 1))
-        colnames(latest_df) <- c('Base_posish', 'num_turns_1', 'num_turns_2', 'num_turns_3', 'num_turns_4', 'works')
-        solutions_round_2<-rbind(solutions_round_2,latest_df)
-      }
-    }
-  }
-}
-
-stw_2<-solutions_round_2 %>%
-  filter(works=="TRUE")
-
-in_running<- inner_join(solutions_in_running,stw_2, by = c("num_turns_1", "num_turns_2", "num_turns_3", "num_turns_4", "works"))
-
-
-
-solutions_round_3 <- data.frame(matrix(ncol = 6, nrow = 0))
-colnames(solutions_round_3) <- c('Base_posish', 'num_turns_1', 'num_turns_2', 'num_turns_3', 'num_turns_4', 'works')
-posish <-3
-constant <-safecracker$Base[[3]]
-for (h in 1:nrow(safecracker)) { 
-  w<-if (is.na(safecracker$Wheel_1[[h]])) safecracker$Floor_1[[posish]] else safecracker$Wheel_1[[h]]
-  rot_a <-h
-  num_turns_w <- if (rot_a>posish) (posish + (16-rot_a)) else (posish-rot_a)
-  for (J in 1:nrow(safecracker)) {
-    x<-if (is.na(safecracker$Wheel_2[[J]])) safecracker$Floor_2[[h]] else safecracker$Wheel_2[[J]]
-    rot_b <-J
-    num_turns_x <- if (rot_b>posish) (posish + (16-rot_b)) else (posish-rot_b)
-    for (K in 1:nrow(safecracker)) {
-      y<-if (is.na(safecracker$Wheel_3[[K]])) safecracker$Floor_3[[J]] else safecracker$Wheel_3[[K]]
-      rot_c <-K
-      num_turns_y <- if (rot_c>posish) (posish + (16-rot_c)) else (posish-rot_c)
-      for (L in 1:nrow(safecracker)) {
-        z <- if (is.na(safecracker$Wheel_4[[L]])) safecracker$Floor_4[[K]] else safecracker$Wheel_4[[L]]
-        rot_d <-L
-        num_turns_z <- if (rot_d>posish) (posish + (16-rot_d)) else (posish-rot_d)
-        
-        summed_val <- constant + w + x + y + z
-        print(summed_val)
-        works<- if_else(summed_val == 50, "TRUE", "FALSE")
-        the_numbers <- c(constant,w,x,y,z)
-        print(the_numbers)
-        latest <- c(posish,num_turns_w,num_turns_x,num_turns_y,num_turns_z,works)
-        latest_df<-data.frame(matrix(latest, 1))
-        colnames(latest_df) <- c('Base_posish', 'num_turns_1', 'num_turns_2', 'num_turns_3', 'num_turns_4', 'works')
-        solutions_round_3<-rbind(solutions_round_3,latest_df)
-      }
-    }
-  }
-}
-
-st3 <-solutions_round_3 %>%
-  filter(works=="TRUE")
-
-still_running <- inner_join(st3, in_running, by = c("num_turns_1", "num_turns_2", "num_turns_3", "num_turns_4", "works"))
-
-solutions_round_4 <- data.frame(matrix(ncol = 6, nrow = 0))
-colnames(solutions_round_4) <- c('Base_posish', 'num_turns_1', 'num_turns_2', 'num_turns_3', 'num_turns_4', 'works')
-posish <-4
-constant <-safecracker$Base[[4]]
-for (h in 1:nrow(safecracker)) { 
-  w<-if (is.na(safecracker$Wheel_1[[h]])) safecracker$Floor_1[[posish]] else safecracker$Wheel_1[[h]]
-  rot_a <-h
-  num_turns_w <- if (rot_a>posish) (posish + (16-rot_a)) else (posish-rot_a)
-  for (J in 1:nrow(safecracker)) {
-    x<-if (is.na(safecracker$Wheel_2[[J]])) safecracker$Floor_2[[h]] else safecracker$Wheel_2[[J]]
-    rot_b <-J
-    num_turns_x <- if (rot_b>posish) (posish + (16-rot_b)) else (posish-rot_b)
-    for (K in 1:nrow(safecracker)) {
-      y<-if (is.na(safecracker$Wheel_3[[K]])) safecracker$Floor_3[[J]] else safecracker$Wheel_3[[K]]
-      rot_c <-K
-      num_turns_y <- if (rot_c>posish) (posish + (16-rot_c)) else (posish-rot_c)
-      for (L in 1:nrow(safecracker)) {
-        z <- if (is.na(safecracker$Wheel_4[[L]])) safecracker$Floor_4[[K]] else safecracker$Wheel_4[[L]]
-        rot_d <-L
-        num_turns_z <- if (rot_d>posish) (posish + (16-rot_d)) else (posish-rot_d)
-        
-        
-        summed_val <- constant + w + x + y + z
-        print(summed_val)
-        works<- if_else(summed_val == 50, "TRUE", "FALSE")
-        the_numbers <- c(constant,w,x,y,z)
-        print(the_numbers)
-        latest <- c(posish,num_turns_w,num_turns_x,num_turns_y,num_turns_z,works)
-        latest_df<-data.frame(matrix(latest, 1))
-        colnames(latest_df) <- c('Base_posish', 'num_turns_1', 'num_turns_2', 'num_turns_3', 'num_turns_4', 'works')
-        solutions_round_4<-rbind(solutions_round_4,latest_df)
-      }
-    }
-  }
-}
-
-st4 <-solutions_round_4 %>%
-  filter(works=="TRUE")
-
-stil_runnin <- inner_join(st4, still_running, by = c("num_turns_1", "num_turns_2", "num_turns_3", "num_turns_4", "works"))
-
-
-
-#function test values
-posish<-3
-constant<-12
-w<-10
-x<-11
-y<-13
-z<-4
-num_turns_w<-2
-num_turns_x<-8
-num_turns_y<-1
-num_turns_z<-4
-
-####more garbage
-solutions_that_work <- solutions_list %>%
-  filter(works=="TRUE") %>%
-  mutate_at(vars(2:5), 
-            ~as.numeric(.)) %>%
-  mutate_at(vars(2:5), ~circularize(.))
-
-base_1_solutions <- solutions_that_work %>%
-  filter(Base_posish == 1)
-
-base_2_solutions <- solutions_that_work %>%
-  filter(Base_posish == 2)
-
-base_3_solutions <- solutions_that_work %>%
-  filter(Base_posish == 3)
-
-base_4_solutions <- solutions_that_work %>%
-  filter(Base_posish == 4)
-
-base_5_solutions <- solutions_that_work %>%
-  filter(Base_posish == 5)
-
-runner <- inner_join(base_1_solutions, base_2_solutions, by = c("num_turns_1", "num_turns_2", "num_turns_3", "num_turns_4"))
-runner <- inner_join(runner, base_3_solutions, by =c("num_turns_1", "num_turns_2", "num_turns_3", "num_turns_4"))
-runner <- inner_join(runner, base_4_solutions, by = c("num_turns_1", "num_turns_2", "num_turns_3", "num_turns_4"))
-
-circularize <-function(x) {ifelse(x<0, x+15, x)}
-## a more elegant solution can prune answers as it goes 
