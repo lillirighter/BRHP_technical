@@ -105,10 +105,8 @@ for (h in 1:nrow(safecracker)) {
         num_turns_z <- if (rot_d>posish) (posish + (16-rot_d)) else (posish-rot_d)
         
         summed_val <- constant + w + x + y + z
-        print(summed_val)
         works<- if (summed_val == 50) ("TRUE") else  ("FALSE")
         the_numbers <- c(constant,w,x,y,z)
-        print(the_numbers)
         latest <- c(posish,num_turns_w,num_turns_x,num_turns_y,num_turns_z,works)
         latest_df<-data.frame(matrix(latest, 1))
         colnames(latest_df) <- c('Base_posish', 'num_turns_1', 'num_turns_2', 'num_turns_3', 'num_turns_4', 'works')
