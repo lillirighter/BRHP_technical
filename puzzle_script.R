@@ -1,7 +1,6 @@
 library(readr)
 library(tidyverse)
 library(glue)
-library(janitor)
 
 #read in our safecracker puzzle as a data frame in its initial unrotated state
 safecracker <- read_csv("safecracker.csv")
