@@ -20,9 +20,9 @@ puzzle_script.R reads in the safecracker.csv and
  
  3. Each column of the spreadsheet corresponds to one LAYER of the puzzle, and what appears as a vertical column of numbers from all the layers on the wooden puzzle will be a row in the spreadsheet. Fill in the values from your puzzle one layer at a time-- there should be sixteen values in a layer, and therefore 16 values in each column. Fill in the Base and Wheel layers first. Every time there is a gap in a wheel, leave a cell of the spreadsheet blank. Fill in the uncovered values on the Floor layers-- they should align with the blank cells of the Wheel columns. Now, you'll also need to fill in the values of the Floor layers that are covered up. Rotate the top Wheel (wheel 4) one time, and fill in the values of Floor 3 that are now visible. Continue turning each wheel one time and filling in the floor underneath each, until all empty Floor layer values have been filled in. Take care never to rotate a wheel until the floor with the same number has been filled in, because rotating the wheel will also change the position of the floor of the same number. Save this spreadsheet as a csv in the same folder that puzzle_script.R is saved in! Close the csv.
  
-4. Reset your puzzle so that all layers are in the same position as the photo you took in step 2. You'll have to rotate
+4. Reset your puzzle so that all layers are in the same position as the photo you took in step 2. You'll have to rotate them either one step in the opposite direction, or 15 steps in the same direction you already rotated the wheels.
  
- 5. Open puzzle_script.R in R or RStudio. Run the script.
+ 5. Open puzzle_script.R in R or RStudio. Run the script. This should take about 5 minutes. 
  
  6. The script should create two new files in the same folder: solve_instructions.txt, and puzzle_solved.csv. Open solve_instructions.txt.
  
