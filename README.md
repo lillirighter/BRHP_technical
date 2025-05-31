@@ -1,6 +1,16 @@
-Initiated 5/27/25
-contact lilli.righter@gmail.com
+Initiated 5/27/25, contact lilli.righter@gmail.com
 
+
+This safecracker script solves 4-wheel puzzles that need every column to line up to 50. Strategy:
+1. It takes one of the numbers on the base that doesn't move, and it checks every possible position combination of the four wheels to see if they add up to fifty.
+2. For each combination, it records how many times each wheel was turned from the starting position for that value to line up with the base number, and whether that combo adds up to fifty, creating a complete list of all 65k possible combinations.
+3. It then narrows down the solutions to only the set that worked for that first base number, taking the possibilities to test from 65k down to about 2k. 
+4. It tests each combination for all 16 base numbers by calculating the new position of each wheel based on the number of turns. Each combination checks whether all 16 columns add up to fifty, and eliminates the solution if any of them don't.
+5. It returns a single combination that works for all 16 columns. It creates instructions for how many times to turn each wheel and what the new alignment of numbers should look like, converted into a table.
+
+
+
+*Repo contents:*
 "BRHP Safecracker puzzle technical interview.pdf" provides the problem with instructions.
 
 safecracker.csv is the spreadsheet version of the puzzle in its initial state. Each row is one column on the puzzle, where the base stays constant.
@@ -12,7 +22,7 @@ puzzle_script.R reads in the safecracker.csv and
   and also outputs puzzle_solved.csv, which is a table corresponding to the puzzle in the solved configuration. 
   Each row of the table is one column on the puzzle and adds up to 50.
   
- How to use for any similar puzzle with 16 columns that need to add up to 50, and 4 turnable wheels:
+*How to use for any similar puzzle with 16 columns that need to add up to 50, and 4 turnable wheels:*
  
  1. Open safecracker.csv in any spreadsheet software (e.g. Excel), delete the current values (except the column names). 
  
